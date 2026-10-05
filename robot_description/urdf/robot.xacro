@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<robot name="simple_diff_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================ -->
+  <!--                  DIMENSIONS PARAMETERS                       -->
+  <!-- ============================================================ -->
+
+  <xacro:property name="body_length" value="0.30"/>   <!-- x axis -->
+  <xacro:property name="body_width"  value="0.20"/>   <!-- y axis -->
+  <xacro:property name="body_height" value="0.10"/>   <!-- z axis -->
+  <xacro:property name="body_mass"   value="1.0"/>
+
+  <xacro:property name="wheel_radius"     value="0.033"/>
+  <xacro:property name="wheel_width"      value="0.026"/>
+  <xacro:property name="wheel_mass"       value="0.2"/>
+  <xacro:property name="wheel_separation" value="0.24"/>  <!-- distance between 2 wheels -->
+  <xacro:property name="wheel_offset_x"   value="-0.02"/> 
+  <xacro:property name="wheel_z_offset"   value="${-(body_height/2)}"/>
+
+  <xacro:property name="caster_radius"  value="0.015"/>
+  <xacro:property name="caster_mass"    value="0.05"/>
+  <xacro:property name="caster_offset_x" value="${body_length/2 - 0.03}"/> <!-- caster in the front -->
+
+  <xacro:property name="lidar_radius" value="0.035"/>
+  <xacro:property name="lidar_height" value="0.04"/>
+  <xacro:property name="lidar_mass"   value="0.1"/>
+
+  <!-- ============================================================ -->
+  <!--             MATERIAL (Color display in RViz2)                -->
+  <!-- ============================================================ -->
+  <material name="blue"><color rgba="0.2 0.4 0.9 1.0"/></material>
+  <material name="black"><color rgba="0.05 0.05 0.05 1.0"/></material>
+  <material name="red"><color rgba="0.9 0.1 0.1 1.0"/></material>
+
+  <!-- ============================================================ -->
+  <!--                  BASE LINK - ROBOT BODY                      -->
+  <!-- ============================================================ -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="${body_mass}"/>
+        <inertia
+            ixx="${body_mass * (body_width * body_width + body_height * body_height) / 12.0}"
+            ixy="0"
+            ixz="0"
+            iyy="${body_mass * (body_length * body_length + body_height * body_height) / 12.0}"
+            iyz="0"
+            izz="${body_mass * (body_length * body_length + body_width * body_width) / 12.0}"
+        />
+    </inertial>
+  </link>
+
+  <!-- ============================================================ -->
+  <!--                     MACRO: 1 DRIVE WHEEL                     -->
+  <!-- ============================================================ -->
+  <xacro:macro name="drive_wheel" params="prefix reflect">
+
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.570795 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="1.570795 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child  link="${prefix}_wheel_link"/>
+      <origin xyz="${wheel_offset_x} ${reflect * wheel_separation/2} ${wheel_z_offset}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="50000" velocity="10"/>
+      <dynamics damping="1.0" friction="1.0"/>
+    </joint>
+
+  </xacro:macro>
+
+  <xacro:drive_wheel prefix="left"  reflect="1"/>
+  <xacro:drive_wheel prefix="right" reflect="-1"/>
+
+  <!-- ============================================================ -->
+  <!--                       CASTER WHEEL                           -->
+  <!-- ============================================================ -->
+  <link name="caster_link">
+    <visual>
+      <geometry><sphere radius="${caster_radius}"/></geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry><sphere radius="${caster_radius}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="${caster_mass}"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="caster_link"/>
+    <origin xyz="${caster_offset_x} 0 ${wheel_z_offset -wheel_radius + caster_radius}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============================================================ -->
+  <!--                           LIDAR LINK                         -->
+  <!-- ============================================================ -->
+  <link name="lidar_link">
+    <visual>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_height}"/></geometry>
+      <material name="red"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_height}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="${lidar_mass}"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="lidar_link"/>
+    <origin xyz="0 0 ${body_height/2 + lidar_height/2}" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:include filename="robot.gazebo.xacro"/>
+
+</robot>
