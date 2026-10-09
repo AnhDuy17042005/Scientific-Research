@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!-- BASICS CONFIG FOR WORLD MAP -->
 <sdf version="1.9">
   <world name="lidar_world">
     <!-- Gazebo systems required by the simulation and GPU LiDAR. -->
@@ -123,28 +122,18 @@
       </link>
     </model>
 
-<!-- ===================================================== -->
-<!-- INTERNAL ROOMS + CORRIDOR                              -->
-<!-- World size: 20 m x 20 m                               -->
-<!-- Main corridor: -1 m < y < 1 m                         -->
-<!-- ===================================================== -->
-
-
-<!-- ===================================================== -->
-<!-- TOP WALL BETWEEN ROOMS AND CORRIDOR                    -->
-<!-- ===================================================== -->
-
-<!-- Left section -->
-<model name="top_corridor_wall_left">
+    <!-- Maze layout adapted from maze1.sdf to the 12 m square.
+         The lower cross walls leave a 1.7 m opening. -->
+<model name="lower_west_wall">
   <static>true</static>
-  <pose>-4.85 1.0 0.5 0 0 0</pose>
+  <pose>-3.2 -4.25 0.5 0 0 0</pose>
 
   <link name="wall_link">
 
     <collision name="collision">
       <geometry>
         <box>
-          <size>2.30 0.10 1.0</size>
+          <size>5.6 0.12 1.0</size>
         </box>
       </geometry>
     </collision>
@@ -152,7 +141,7 @@
     <visual name="visual">
       <geometry>
         <box>
-          <size>2.30 0.10 1.0</size>
+          <size>5.6 0.12 1.0</size>
         </box>
       </geometry>
 
@@ -165,17 +154,16 @@
 </model>
 
 
-<!-- Middle section -->
-<model name="top_corridor_wall_middle">
+<model name="lower_east_wall">
   <static>true</static>
-  <pose>0 1.0 0.5 0 0 0</pose>
+  <pose>3.65 -4.25 0.5 0 0 0</pose>
 
   <link name="wall_link">
 
     <collision name="collision">
       <geometry>
         <box>
-          <size>4.60 0.10 1.0</size>
+          <size>4.7 0.12 1.0</size>
         </box>
       </geometry>
     </collision>
@@ -183,7 +171,7 @@
     <visual name="visual">
       <geometry>
         <box>
-          <size>4.60 0.10 1.0</size>
+          <size>4.7 0.12 1.0</size>
         </box>
       </geometry>
 
@@ -196,17 +184,17 @@
 </model>
 
 
-<!-- Right section -->
-<model name="top_corridor_wall_right">
+    <!-- Upper cross walls create two side passages. -->
+<model name="upper_west_wall">
   <static>true</static>
-  <pose>4.85 1.0 0.5 0 0 0</pose>
+  <pose>-4.1 1.8 0.5 0 0 0</pose>
 
   <link name="wall_link">
 
     <collision name="collision">
       <geometry>
         <box>
-          <size>2.30 0.10 1.0</size>
+          <size>3.8 0.12 1.0</size>
         </box>
       </geometry>
     </collision>
@@ -214,7 +202,7 @@
     <visual name="visual">
       <geometry>
         <box>
-          <size>2.30 0.10 1.0</size>
+          <size>3.8 0.12 1.0</size>
         </box>
       </geometry>
 
@@ -227,22 +215,16 @@
 </model>
 
 
-<!-- ===================================================== -->
-<!-- WALL BETWEEN ROOM 1 AND ROOM 2                         -->
-<!-- ===================================================== -->
-
-<model name="room1_room2_wall">
+<model name="upper_east_wall">
   <static>true</static>
-
-  <!-- x y z roll pitch yaw -->
-  <pose>0 3.5 0.5 0 0 0</pose>
+  <pose>3.75 1.5 0.5 0 0 0</pose>
 
   <link name="wall_link">
 
     <collision name="collision">
       <geometry>
         <box>
-          <size>0.10 5.0 1.0</size>
+          <size>4.5 0.12 1.0</size>
         </box>
       </geometry>
     </collision>
@@ -250,7 +232,7 @@
     <visual name="visual">
       <geometry>
         <box>
-          <size>0.10 5.0 1.0</size>
+          <size>4.5 0.12 1.0</size>
         </box>
       </geometry>
 
@@ -259,6 +241,64 @@
       </material>
     </visual>
 
+  </link>
+</model>
+
+<!-- The central divider is offset so the robot can spawn at (0, 0). -->
+<model name="central_divider">
+  <static>true</static>
+  <pose>-0.6 2.4 0.5 0 0 0</pose>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry><box><size>0.12 7.2 1.0</size></box></geometry>
+    </collision>
+    <visual name="visual">
+      <geometry><box><size>0.12 7.2 1.0</size></box></geometry>
+      <material><diffuse>0.8 0.8 0.8 1</diffuse></material>
+    </visual>
+  </link>
+</model>
+
+<model name="east_divider">
+  <static>true</static>
+  <pose>1.5 0.25 0.5 0 0 0</pose>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry><box><size>0.12 2.5 1.0</size></box></geometry>
+    </collision>
+    <visual name="visual">
+      <geometry><box><size>0.12 2.5 1.0</size></box></geometry>
+      <material><diffuse>0.8 0.8 0.8 1</diffuse></material>
+    </visual>
+  </link>
+</model>
+
+<!-- Two northern branches reproduce the turns in maze1.sdf. -->
+<model name="northwest_branch_wall">
+  <static>true</static>
+  <pose>-4.1 3.1 0.5 0 0 0</pose>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry><box><size>0.12 2.6 1.0</size></box></geometry>
+    </collision>
+    <visual name="visual">
+      <geometry><box><size>0.12 2.6 1.0</size></box></geometry>
+      <material><diffuse>0.8 0.8 0.8 1</diffuse></material>
+    </visual>
+  </link>
+</model>
+
+<model name="northeast_branch_wall">
+  <static>true</static>
+  <pose>3.1 4.4 0.5 0 0 0</pose>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry><box><size>0.12 3.2 1.0</size></box></geometry>
+    </collision>
+    <visual name="visual">
+      <geometry><box><size>0.12 3.2 1.0</size></box></geometry>
+      <material><diffuse>0.8 0.8 0.8 1</diffuse></material>
+    </visual>
   </link>
 </model>
 
