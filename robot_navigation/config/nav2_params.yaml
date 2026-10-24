@@ -29,6 +29,13 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
+    # Gazebo spawns the robot at the saved map's (0, 0), facing +X.
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
     transform_tolerance: 1.0
     update_min_a: 0.1
     update_min_d: 0.1
