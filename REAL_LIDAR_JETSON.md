@@ -47,17 +47,21 @@ Jetson và terminal chạy SLAM/RViz trên laptop:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-export ROS_DOMAIN_ID=42
+export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 unset ROS_LOCALHOST_ONLY
 ```
 
+Driver Jetson đang chạy trong phiên hiện tại dùng domain mặc định `0` (đã
+kiểm tra laptop nhận được `/scan` ở domain này). Nếu sau này đổi domain,
+đặt **cùng giá trị ở cả hai máy** và khởi động lại các node ROS 2.
+
 Nếu nối qua Tailscale, multicast thường không đi qua mạng VPN. Thử khai báo
 peer tĩnh ở cả hai phía (thay IP bằng địa chỉ Tailscale thực tế):
 
 ```bash
-# Trên laptop:
+# Trên laptop (Jetson hiện có IP Tailscale 100.97.65.56):
 export ROS_STATIC_PEERS=<JETSON_TAILSCALE_IP>
 
 # Trong container Jetson:
@@ -68,7 +72,11 @@ Container Jetson cần truy cập được mạng của host; kiểm tra network
 `docker inspect -f '{{.HostConfig.NetworkMode}}' <TEN_CONTAINER>` trên host.
 `host` là cấu hình đơn giản nhất cho ROS 2 nhiều máy. Nếu dùng cùng mạng LAN
 và ROS 2 tự tìm thấy nhau, không cần `ROS_STATIC_PEERS`. Sau khi đổi các biến
-môi trường, chạy `ros2 daemon stop` trước khi dùng `ros2 topic list`.
+môi trường, chạy `ros2 daemon stop` hoặc dùng
+`ros2 topic list --no-daemon --spin-time 5 -t` để tránh daemon cũ. Khi Jetson
+dùng discovery `SUBNET`, khai báo Jetson làm peer trên laptop có thể đã đủ;
+nếu chưa thấy dữ liệu, khai báo peer ngược lại trong container Jetson rồi
+khởi động lại driver.
 
 ## 3. Jetson chạy driver LD06
 
@@ -84,7 +92,7 @@ Kiểm tra ở terminal khác trong container:
 
 ```bash
 ros2 topic info /scan -v
-ros2 topic echo /scan --once --field header --qos-reliability best_effort
+ros2 topic echo /scan sensor_msgs/msg/LaserScan --once --field header --qos-reliability best_effort
 ros2 run tf2_ros tf2_echo base_link base_laser
 ```
 
@@ -107,7 +115,7 @@ Trên laptop, sau khi đặt các biến môi trường ở bước 2:
 ```bash
 source ~/ROS2/slam_ws/install/setup.bash
 ros2 daemon stop
-ros2 topic echo /scan --once --field header --qos-reliability best_effort
+ros2 topic echo /scan sensor_msgs/msg/LaserScan --once --field header --qos-reliability best_effort
 ros2 run tf2_ros tf2_echo base_link base_laser
 ```
 
