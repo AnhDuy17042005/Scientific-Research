@@ -4,7 +4,7 @@ Project hiện tại mô phỏng một robot vi sai trong Gazebo, cho phép đi�
 robot qua topic `/cmd_vel`, đọc LiDAR 2D qua `/scan` và tạo bản đồ bằng
 `slam_toolbox`.
 
-Nếu LiDAR và odometry chạy trên Jetson còn SLAM/RViz chạy trên laptop, xem
+Nếu LiDAR LD06 chạy trên Jetson còn RTAB-Map/RViz chạy trên laptop, xem
 [hướng dẫn dùng LiDAR thật qua mạng](REAL_LIDAR_JETSON.md).
 
 ## 1. Build workspace
