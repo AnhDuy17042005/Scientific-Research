@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="simple_diff_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <xacro:arg name="gazebo_plugins" default="true"/>
+  <xacro:arg name="lidar_mount_height" default="0.07"/>
+
   <!-- ============================================================ -->
   <!--                  DIMENSIONS PARAMETERS                       -->
   <!-- ============================================================ -->
@@ -144,9 +147,11 @@
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child  link="lidar_link"/>
-    <origin xyz="0 0 ${body_height/2 + lidar_height/2}" rpy="0 0 0"/>
+    <origin xyz="0 0 $(arg lidar_mount_height)" rpy="0 0 0"/>
   </joint>
 
-  <xacro:include filename="robot.gazebo.xacro"/>
+  <xacro:if value="$(arg gazebo_plugins)">
+    <xacro:include filename="robot.gazebo.xacro"/>
+  </xacro:if>
 
 </robot>

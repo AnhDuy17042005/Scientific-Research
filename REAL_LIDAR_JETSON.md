@@ -8,8 +8,9 @@ hiện tại; RViz đặt Fixed Frame `map` sẽ báo thiếu TF.
 Để thử SLAM chỉ với LD06, chạy RTAB-Map ICP odometry và RTAB-Map SLAM trên
 laptop. ICP ước lượng chuyển động từ các scan liên tiếp, xuất `/odom` và TF
 `odom -> base_link`; SLAM dùng chúng để tạo `/map` và TF `map -> odom`.
-Không khởi động Gazebo, `sim_mapping.launch.py` hoặc
-`sim_navigation.launch.py` trong luồng dùng cảm biến thật.
+Không khởi động `sim_mapping.launch.py` hoặc `sim_navigation.launch.py` trong
+luồng dùng cảm biến thật. Nếu muốn xem robot ảo trong Gazebo, dùng chế độ ở
+bước 5.
 
 ## 1. Đồng bộ source bằng Git
 
@@ -95,7 +96,7 @@ Cài RTAB-Map trên **laptop** nếu chưa có:
 
 ```bash
 sudo apt update
-sudo apt install ros-jazzy-rtabmap-ros
+sudo apt install ros-jazzy-rtabmap-launch
 ```
 
 Trên laptop, sau khi đặt các biến môi trường ở bước 2:
@@ -145,3 +146,67 @@ chạy Nav2. Khi có encoder/IMU, tích hợp chúng rồi kiểm tra lại chu�
 Bản đồ `lidar_world.yaml` đi kèm project thuộc world Gazebo. Khi dùng LiDAR
 thật, hãy tạo bản đồ mới từ môi trường thật trước khi dùng AMCL/Nav2; không
 chạy `sim_navigation.launch.py` với bản đồ Gazebo.
+
+## 5. Hiển thị robot ảo trong Gazebo khi quét bản đồ thật
+
+Chế độ này giữ Gazebo làm **mô hình hiển thị**. World mới chỉ có mặt đất;
+Gazebo không tạo `/scan`, `/odom`, `/tf` hoặc `/clock` trên ROS. LD06 trên
+Jetson là nguồn `/scan` duy nhất. `icp_odometry` trên laptop tạo `/odom` và
+TF `odom -> base_link`; robot trong Gazebo đi theo `/odom` qua service
+`/world/real_scan_visualization/set_pose`. RTAB-Map tạo `/map` từ scan thật.
+Do đó các vật thể trên bản đồ RViz là môi trường thật, không phải vật thể
+Gazebo. Mô hình robot hiện tại là robot vi sai để hiển thị, chưa phải hình học
+robot đa hướng ba bánh.
+
+Trên laptop, cài các package cần thiết rồi build source mới:
+
+```bash
+sudo apt update
+sudo apt install ros-jazzy-rtabmap-launch ros-jazzy-ros-gz \
+  ros-jazzy-joint-state-publisher
+cd ~/ROS2/slam_ws
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select robot_description robot_simulation robot_slam --symlink-install
+source install/setup.bash
+```
+
+Giữ driver LD06 trên Jetson chạy như bước 3. Trên laptop, trong terminal đã
+cấu hình ROS 2 như bước 2, xác nhận `/scan` và TF tĩnh rồi chạy:
+
+```bash
+ros2 launch robot_slam real_scan_gazebo_mapping.launch.py
+```
+
+Launch mở Gazebo, robot ảo, RTAB-Map ICP odometry, RTAB-Map SLAM và RViz.
+Di chuyển **cả robot và LiDAR thật** chậm trong phòng để quét map. Robot ảo
+trong Gazebo sẽ đi theo chuyển động ước lượng từ scan. Chiều cao hình LiDAR
+trên robot ảo mặc định là `0.18 m`; nếu TF `base_link -> base_laser` trên Jetson
+có chiều cao khác, đặt `lidar_mount_height:=<so_met>` khi launch. Database của
+chế độ này nằm ở `~/.ros/rtabmap_real_ld06.db`; để bắt đầu một bản đồ độc lập,
+chọn tên file mới bằng `database_path:=/duong/dan/ban_do_moi.db`.
+
+Không chạy đồng thời `sim_mapping.launch.py`, `lidar_sim.launch.py` hoặc
+`mapping.launch.py`: chúng có thể thêm scan ảo, odometry ảo hoặc node SLAM thứ
+hai. Cũng không chạy `sim_navigation.launch.py` với map Gazebo cũ. Khi Gazebo
+trong chế độ này đã mở, kiểm tra trên laptop:
+
+```bash
+ros2 topic info /scan -v        # chỉ một publisher: driver Jetson
+ros2 topic info /odom -v        # publisher: icp_odometry
+ros2 topic echo /map --once --field info
+ros2 run tf2_ros tf2_echo map base_laser
+```
+
+`tf2_echo` chạy liên tục, dừng bằng Ctrl+C. Sau khi map đã tạo xong, lưu bản
+đồ 2D cho Nav2 vào một thư mục riêng trên laptop:
+
+```bash
+mkdir -p ~/ROS2/slam_ws/maps
+ros2 run nav2_map_server map_saver_cli -f ~/ROS2/slam_ws/maps/real_ld06
+```
+
+Lệnh tạo `real_ld06.yaml` và ảnh bản đồ trong `~/ROS2/slam_ws/maps`. Nếu
+Gazebo không di chuyển theo
+robot thật, kiểm tra `/odom`, service `/world/real_scan_visualization/set_pose`
+và log `follow_real_odom`. Gazebo không điều khiển robot thật qua `/cmd_vel`;
+vị trí robot ảo chỉ là ước lượng từ scan, nên có thể trôi hoặc mất bám.

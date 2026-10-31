@@ -6,6 +6,8 @@ robot qua topic `/cmd_vel`, đọc LiDAR 2D qua `/scan` và tạo bản đồ b�
 
 Nếu LiDAR LD06 chạy trên Jetson còn RTAB-Map/RViz chạy trên laptop, xem
 [hướng dẫn dùng LiDAR thật qua mạng](REAL_LIDAR_JETSON.md).
+Hướng dẫn này cũng có chế độ hiển thị robot ảo trong Gazebo khi lập bản đồ
+từ `/scan` thật.
 
 ## 1. Build workspace
 
