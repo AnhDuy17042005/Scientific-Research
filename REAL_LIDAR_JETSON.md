@@ -114,13 +114,22 @@ Trên laptop, sau khi đặt các biến môi trường ở bước 2:
 
 ```bash
 source ~/ROS2/slam_ws/install/setup.bash
+# MVS camera SDK trên laptop chứa libusb cũ, gây lỗi khi chạy RTAB-Map.
+# Loại riêng các thư mục MVS khỏi phiên terminal ROS 2 này.
+export LD_LIBRARY_PATH="$(printf '%s' "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -vE '^/opt/MVS/lib/(32|64)$' | paste -sd: -)"
 ros2 daemon stop
 ros2 topic echo /scan sensor_msgs/msg/LaserScan --once --field header --qos-reliability best_effort
 ros2 run tf2_ros tf2_echo base_link base_laser
 ```
 
 Nếu laptop chưa thấy `/scan` hoặc TF tĩnh, xử lý kết nối ROS 2 giữa hai máy
-trước. Sau đó chạy một launch duy nhất trên laptop:
+trước.
+
+Lệnh lọc `LD_LIBRARY_PATH` ở trên cần chạy lại trong **terminal dùng để
+launch** (kể cả khi vừa mở terminal mới). Nó chỉ thay đổi phiên terminal đó;
+không sửa cài đặt MVS. Nếu RTAB-Map vẫn thoát với mã 127, thử chạy
+`/opt/ros/jazzy/lib/rtabmap_odom/icp_odometry --help` để xem lỗi thư viện.
+Sau đó chạy một launch duy nhất trên laptop:
 
 ```bash
 ros2 launch rtabmap_launch rtabmap.launch.py \
@@ -221,3 +230,15 @@ Gazebo không di chuyển theo
 robot thật, kiểm tra `/odom`, service `/world/real_scan_visualization/set_pose`
 và log `follow_real_odom`. Gazebo không điều khiển robot thật qua `/cmd_vel`;
 vị trí robot ảo chỉ là ước lượng từ scan, nên có thể trôi hoặc mất bám.
+
+## Khi RViz báo `Frame [map] does not exist`
+
+Thông báo này xuất hiện khi RTAB-Map chưa tạo TF `map`. Để **xem ngay scan
+thật** mà không cần SLAM, đặt **Global Options → Fixed Frame** trong RViz thành
+`base_laser`. Giữ **LaserScan → Topic** là `/scan`, và đặt **LaserScan → Topic →
+Reliability Policy** thành `Best Effort`. Khi điểm scan đã xuất hiện, kiểm tra
+terminal chạy SLAM: nếu `icp_odometry` và `rtabmap` đều thoát với mã `127` và
+báo `libpcl_io.so.1.14: undefined symbol: libusb_set_option`, chạy lại lệnh
+lọc `LD_LIBRARY_PATH` ở bước 4 trong chính terminal launch rồi khởi động lại
+launch. Khi `/odom`, `/map` và TF `map -> odom` đã có, đổi Fixed Frame về
+`map` để xem bản đồ.
