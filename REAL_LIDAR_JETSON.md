@@ -5,8 +5,7 @@ Tailscale. Jetson chạy driver LD06; laptop chạy RViz2 và RTAB-Map.
 
 ## 1. Jetson: chạy driver LD06
 
-Trên Jetson host, vào container `ros_jazzy` (bỏ dòng đầu nếu đã ở trong
-container):
+Trên Jetson host, vào container `ros_jazzy`:
 
 ```bash
 docker exec -it ros_jazzy bash
@@ -24,7 +23,7 @@ Giữ terminal này chạy. Jetson phát `/scan` với frame `base_laser` và TF
 
 ## 2. Laptop: nhận `/scan` từ Jetson
 
-Mở terminal **trên laptop** (không phải terminal SSH). Nếu trước đó chạy mô
+Mở terminal **trên laptop**. Nếu trước đó chạy mô
 phỏng ở domain `42`, các lệnh dưới đây đưa terminal về domain `0` của Jetson:
 
 ```bash
@@ -64,16 +63,8 @@ sổ.
 Trong terminal laptop đã cấu hình ở bước 2, chạy:
 
 ```bash
-# Loại thư viện libusb cũ của MVS gây lỗi RTAB-Map trên laptop.
-export LD_LIBRARY_PATH="$(printf '%s' "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -vE '^/opt/MVS/lib/(32|64)$' | paste -sd: -)"
 ros2 launch robot_slam real_scan_gazebo_mapping.launch.py
 ```
-
-Di chuyển LiDAR thật chậm trong phòng. RViz2 hiển thị `/scan` và `/map` thật;
-robot ảo trong Gazebo đi theo odometry ước lượng từ scan. Gazebo hiện chỉ có
-mặt đất, không dựng tường của map thật. Mặc định mỗi lần launch tạo map mới và
-xóa database cũ `~/.ros/rtabmap_real_ld06.db`; sao lưu file này trước nếu muốn
-giữ map cũ.
 
 Muốn định vị trên database đã quét, dừng launch bằng Ctrl+C rồi chạy:
 
@@ -81,6 +72,3 @@ Muốn định vị trên database đã quét, dừng launch bằng Ctrl+C rồi
 ros2 launch robot_slam real_scan_gazebo_mapping.launch.py \
   reset_map:=false localization:=true
 ```
-
-Không chạy đồng thời `sim_mapping.launch.py` hoặc `sim_navigation.launch.py`:
-chúng dùng LiDAR ảo và có thể tạo thêm publisher `/scan`.
