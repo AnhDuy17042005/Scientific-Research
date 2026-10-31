@@ -210,6 +210,25 @@ Nếu cần giữ bản đồ cũ và bắt đầu một bản đồ độc lậ
 `database_path:=/duong/dan/ban_do_moi.db` hoặc sao lưu file `.db` trước khi
 chạy lại với `reset_map:=true`.
 
+### Dùng lại map thật với LiDAR thật
+
+Sau khi đã quét map và dừng launch bằng Ctrl+C, giữ file
+`~/.ros/rtabmap_real_ld06.db`. Để dùng các scan mới định vị trên map đã quét,
+giữ driver LD06 chạy trên Jetson rồi khởi động trên laptop:
+
+```bash
+ros2 launch robot_slam real_scan_gazebo_mapping.launch.py \
+  reset_map:=false localization:=true
+```
+
+Chế độ này nạp **database RTAB-Map `.db`**, không nạp file occupancy map `.yaml`
+dành cho Nav2. Nếu đã lưu database dưới tên khác, thêm
+`database_path:=/duong/dan/map_cu.db`. Trong RViz, chọn Fixed Frame `map` và
+kiểm tra TF `map -> odom -> base_link -> base_laser`. Robot Gazebo vẫn chỉ là
+mô hình hiển thị đi theo `/odom`; world Gazebo hiện chỉ có mặt đất, không chứa
+các tường từ map thật. Robot ảo không tạo chuyển động cho LiDAR thật: để scan
+thay đổi theo vị trí, phải di chuyển LiDAR thật trong môi trường tương ứng.
+
 Không chạy đồng thời `sim_mapping.launch.py`, `lidar_sim.launch.py` hoặc
 `mapping.launch.py`: chúng có thể thêm scan ảo, odometry ảo hoặc node SLAM thứ
 hai. Cũng không chạy `sim_navigation.launch.py` với map Gazebo cũ. Khi Gazebo

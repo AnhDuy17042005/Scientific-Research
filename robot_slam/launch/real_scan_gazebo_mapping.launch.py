@@ -4,11 +4,22 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+
+
+def validate_mode(context, *args, **kwargs):
+    if (
+        LaunchConfiguration("localization").perform(context) == "true"
+        and LaunchConfiguration("reset_map").perform(context) == "true"
+    ):
+        raise RuntimeError(
+            "Localization needs the saved database: use reset_map:=false localization:=true"
+        )
+    return []
 
 
 def generate_launch_description():
@@ -50,10 +61,17 @@ def generate_launch_description():
             description="Delete the previous RTAB-Map database on startup.",
         ),
         DeclareLaunchArgument(
+            "localization",
+            default_value="false",
+            choices=["true", "false"],
+            description="Localize real scans against an existing RTAB-Map database.",
+        ),
+        DeclareLaunchArgument(
             "lidar_mount_height",
             default_value="0.18",
             description="Real base_link -> base_laser height in metres.",
         ),
+        OpaqueFunction(function=validate_mode),
         Node(
             package="robot_state_publisher",
             executable="robot_state_publisher",
@@ -110,6 +128,7 @@ def generate_launch_description():
                 "odom_frame_id": "odom",
                 "map_topic": "/map",
                 "database_path": LaunchConfiguration("database_path"),
+                "localization": LaunchConfiguration("localization"),
                 "args": PythonExpression([
                     "'-d' if '", LaunchConfiguration("reset_map"), "' == 'true' else ''"
                 ]),
