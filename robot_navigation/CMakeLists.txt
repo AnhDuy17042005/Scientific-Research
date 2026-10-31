@@ -15,6 +15,7 @@ install(
   DIRECTORY
     config
     launch
+    waypoints
   DESTINATION share/${PROJECT_NAME}
 )
 

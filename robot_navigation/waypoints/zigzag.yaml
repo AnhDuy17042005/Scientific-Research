@@ -1,0 +1,22 @@
+# RViz Nav2 panel: Waypoint / Nav Through Poses Mode -> Load WPs.
+# Poses use the map frame in metres; orientation is [w, x, y, z].
+# This route starts below the robot's default spawn and sweeps the lower-left room.
+waypoints:
+  waypoint0:
+    pose: [0.0, -2.0, 0.0]
+    orientation: [0.0, 0.0, 0.0, 1.0]
+  waypoint1:
+    pose: [-4.8, -2.0, 0.0]
+    orientation: [0.707107, 0.0, 0.0, -0.707107]
+  waypoint2:
+    pose: [-4.8, -2.7, 0.0]
+    orientation: [1.0, 0.0, 0.0, 0.0]
+  waypoint3:
+    pose: [-1.2, -2.7, 0.0]
+    orientation: [0.707107, 0.0, 0.0, -0.707107]
+  waypoint4:
+    pose: [-1.2, -3.4, 0.0]
+    orientation: [0.0, 0.0, 0.0, 1.0]
+  waypoint5:
+    pose: [-4.8, -3.4, 0.0]
+    orientation: [0.0, 0.0, 0.0, 1.0]

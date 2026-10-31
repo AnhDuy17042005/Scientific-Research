@@ -232,3 +232,64 @@ source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install --packages-select robot_slam
 source install/setup.bash
 ```
+
+## 12. Chạy Navigation với bản đồ đã lưu
+
+Đảm bảo `robot_slam/maps/lidar_world.yaml` và `lidar_world.pgm` đã tồn tại.
+Dừng SLAM Toolbox trước khi chạy Navigation để AMCL là node duy nhất phát TF
+`map -> odom`.
+
+Cách chạy Gazebo, robot, Nav2 và RViz bằng một lệnh:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/ROS2/slam_ws/install/setup.bash
+
+ros2 launch robot_navigation sim_navigation.launch.py
+```
+
+Nếu Gazebo đã được chạy riêng bằng `lidar_sim.launch.py`, chỉ chạy Nav2 và
+RViz trong terminal khác:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/ROS2/slam_ws/install/setup.bash
+
+ros2 launch robot_navigation navigation.launch.py
+```
+
+Mặc định AMCL khởi tạo robot ở `(x=0, y=0, yaw=0)` trên bản đồ, tương ứng với
+vị trí spawn trong `lidar_sim.launch.py`. Nếu robot được đặt ở vị trí khác,
+chọn **2D Pose Estimate** trong RViz để đặt lại vị trí ban đầu. Sau khi robot
+hiện đúng trên bản đồ, chọn **Nav2 Goal**, nhấp vào vùng trống rồi kéo mũi tên
+theo hướng mong muốn tại điểm đích.
+
+Kiểm tra các node Navigation và TF trong một terminal đã source môi trường:
+
+```bash
+ros2 lifecycle get /amcl
+ros2 lifecycle get /bt_navigator
+ros2 run tf2_ros tf2_echo map odom
+ros2 action list
+```
+
+`/amcl` và `/bt_navigator` cần ở trạng thái `active`, TF `map -> odom` cần có,
+và action `/navigate_to_pose` cần xuất hiện trước khi thử goal. Chọn điểm đích
+gần robot, tránh tường và vùng chưa biết cho lần chạy đầu tiên.
+
+### Chạy lộ trình zíc zắc bằng waypoint
+
+File `robot_navigation/waypoints/zigzag_lower_left.yaml` chứa sáu điểm theo thứ
+tự trong vùng trống phía dưới bên trái của bản đồ `lidar_world`. Sau khi chạy
+Navigation và kiểm tra robot đã định vị đúng trên map:
+
+1. Trong bảng **Navigation 2** của RViz, bấm **Waypoint / Nav Through Poses Mode**.
+2. Bấm **Load WPs** và chọn file
+   `~/ROS2/slam_ws/src/slam_robot/robot_navigation/waypoints/zigzag_lower_left.yaml`.
+3. Kiểm tra các điểm đánh số nằm trong vùng trống, đặt **Num of loops** bằng `0`,
+   rồi bấm **Start Waypoint Following**.
+
+Waypoint đầu tiên ở `(0, -2.0)`; robot mặc định spawn gần `(0, 0)`. Nếu dùng bản
+đồ hoặc vị trí xuất phát khác, cần chỉnh tọa độ waypoint theo frame `map`.
+LiDAR cập nhật costmap để Nav2 tránh vật cản và tìm đường tới waypoint tiếp theo;
+đường đi thực tế có thể khác các đoạn thẳng nối waypoint.
