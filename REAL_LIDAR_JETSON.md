@@ -8,6 +8,9 @@ hiện tại; RViz đặt Fixed Frame `map` sẽ báo thiếu TF.
 Để thử SLAM chỉ với LD06, chạy RTAB-Map ICP odometry và RTAB-Map SLAM trên
 laptop. ICP ước lượng chuyển động từ các scan liên tiếp, xuất `/odom` và TF
 `odom -> base_link`; SLAM dùng chúng để tạo `/map` và TF `map -> odom`.
+Đây là chế độ RTAB-Map **LiDAR-only**: không dùng camera, nên không có visual
+odometry hay vòng lặp dựa trên hình ảnh. Nó phục vụ kiểm tra pipeline và quét
+map 2D hiện tại; mục tiêu hợp nhất LiDAR + Depth camera vẫn chờ phần cứng.
 Không khởi động `sim_mapping.launch.py` hoặc `sim_navigation.launch.py` trong
 luồng dùng cảm biến thật. Nếu muốn xem robot ảo trong Gazebo, dùng chế độ ở
 bước 5.

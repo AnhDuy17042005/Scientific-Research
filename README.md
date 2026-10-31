@@ -9,6 +9,10 @@ Nếu LiDAR LD06 chạy trên Jetson còn RTAB-Map/RViz chạy trên laptop, xem
 Hướng dẫn này cũng có chế độ hiển thị robot ảo trong Gazebo khi lập bản đồ
 từ `/scan` thật.
 
+Chế độ LD06 hiện tại là **RTAB-Map chỉ dùng LiDAR 2D** để thử quét bản đồ.
+Phần kết hợp LiDAR với Depth camera, visual odometry và vòng lặp bằng hình ảnh
+chưa thể thử nghiệm cho tới khi có camera và các topic ảnh/depth tương ứng.
+
 ## 1. Build workspace
 
 Chạy khi build lần đầu hoặc sau khi thay đổi file trong package:
