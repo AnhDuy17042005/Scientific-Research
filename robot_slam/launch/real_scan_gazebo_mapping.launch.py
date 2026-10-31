@@ -6,7 +6,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
@@ -42,6 +42,12 @@ def generate_launch_description():
             "database_path",
             default_value=os.path.expanduser("~/.ros/rtabmap_real_ld06.db"),
             description="RTAB-Map database for the real LD06 mapping session.",
+        ),
+        DeclareLaunchArgument(
+            "reset_map",
+            default_value="true",
+            choices=["true", "false"],
+            description="Delete the previous RTAB-Map database on startup.",
         ),
         DeclareLaunchArgument(
             "lidar_mount_height",
@@ -104,6 +110,9 @@ def generate_launch_description():
                 "odom_frame_id": "odom",
                 "map_topic": "/map",
                 "database_path": LaunchConfiguration("database_path"),
+                "args": PythonExpression([
+                    "'-d' if '", LaunchConfiguration("reset_map"), "' == 'true' else ''"
+                ]),
                 "qos": "2",
                 "use_sim_time": "false",
                 "rtabmap_viz": "false",

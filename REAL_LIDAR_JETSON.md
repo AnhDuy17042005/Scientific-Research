@@ -202,8 +202,13 @@ Di chuyển **cả robot và LiDAR thật** chậm trong phòng để quét map.
 trong Gazebo sẽ đi theo chuyển động ước lượng từ scan. Chiều cao hình LiDAR
 trên robot ảo mặc định là `0.18 m`; nếu TF `base_link -> base_laser` trên Jetson
 có chiều cao khác, đặt `lidar_mount_height:=<so_met>` khi launch. Database của
-chế độ này nằm ở `~/.ros/rtabmap_real_ld06.db`; để bắt đầu một bản đồ độc lập,
-chọn tên file mới bằng `database_path:=/duong/dan/ban_do_moi.db`.
+chế độ này nằm ở `~/.ros/rtabmap_real_ld06.db`. Launch mặc định dùng
+`reset_map:=true`: RTAB-Map xóa database này khi khởi động để tạo map mới.
+Muốn tiếp tục map từ lần chạy trước, dùng
+`ros2 launch robot_slam real_scan_gazebo_mapping.launch.py reset_map:=false`.
+Nếu cần giữ bản đồ cũ và bắt đầu một bản đồ độc lập, chọn tên file mới bằng
+`database_path:=/duong/dan/ban_do_moi.db` hoặc sao lưu file `.db` trước khi
+chạy lại với `reset_map:=true`.
 
 Không chạy đồng thời `sim_mapping.launch.py`, `lidar_sim.launch.py` hoặc
 `mapping.launch.py`: chúng có thể thêm scan ảo, odometry ảo hoặc node SLAM thứ
