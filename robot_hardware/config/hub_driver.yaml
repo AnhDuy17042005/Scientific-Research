@@ -1,0 +1,19 @@
+hub_driver:
+  ros__parameters:
+    can_channel: can0
+    left_id: 6
+    right_id: 7
+    wheel_radius: 0.0825
+    track_width: 0.40
+    invert_left: true
+    invert_right: false
+    accel: 2.0            
+    vel_limit: 3.0        
+    current_limit: 10.0   
+    max_linear: 0.5       
+    max_angular: 1.5      
+    cmd_timeout: 0.5      
+    rate: 50.0
+    odom_frame: odom
+    base_frame: base_link
+    publish_tf: true
